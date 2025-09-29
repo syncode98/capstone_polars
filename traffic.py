@@ -79,6 +79,7 @@ def calculate_most_visited_locations(combined_dataset,is_lazy = False):
 
 
 st.set_page_config("Capstone Project - Analyse the effectiveness of polars library")
+st.title("Analyse Polars library")
 lazy_dataset = lazyscan()
 #combined_dataset = eagerscan()
 
