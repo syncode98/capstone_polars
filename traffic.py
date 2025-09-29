@@ -76,7 +76,7 @@ def calculate_most_visited_locations(combined_dataset,is_lazy = False):
 
     
 lazy_dataset = lazyscan()
-combined_dataset = eagerscan()
+#combined_dataset = eagerscan()
 
 calculate_most_visited_locations(lazy_dataset,True)
 
