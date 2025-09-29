@@ -1,5 +1,6 @@
 import polars as pl
 import time
+import streamlit as st
 
 def start_stopwatch():
         return time.time()
@@ -64,9 +65,11 @@ def calculate_most_visited_locations(combined_dataset,is_lazy = False):
     most_common_trips = df.group_by(["PULocationID","DOLocationID"]).agg([pl.len().alias("trips")]).sort(("trips"),descending=True)
 
     if(is_lazy):
-        print(most_visited_location.limit(5).collect())
-        print(most_picked_location.limit(5).collect())
-        print(most_common_trips.limit(5).collect())
+        st.write("Lazyscan Results")
+
+        st.dataframe(most_visited_location.limit(5).collect())
+        st.dataframe(most_picked_location.limit(5).collect())
+        st.dataframe(most_common_trips.limit(5).collect())
         stop_stopwatch(start)
     else:
         print(most_visited_location.limit(10).head())
