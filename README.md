@@ -1,2 +1,2 @@
 # capstone_polars
-project to analyse new york taxi trip dataset
+Project to analyse new york taxi trip dataset
