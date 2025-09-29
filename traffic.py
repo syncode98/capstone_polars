@@ -67,26 +67,32 @@ def calculate_most_visited_locations(combined_dataset,is_lazy = False):
     if(is_lazy):
         st.write("Lazyscan Results")
 
-        st.dataframe(most_visited_location.limit(5).collect())
-        st.dataframe(most_picked_location.limit(5).collect())
-        st.dataframe(most_common_trips.limit(5).collect())
+        st.dataframe(most_visited_location.limit(3).collect())
+        st.dataframe(most_picked_location.limit(3).collect())
+        st.dataframe(most_common_trips.limit(3).collect())
         stop_stopwatch(start)
     else:
-        print(most_visited_location.limit(10).head())
-        print(most_picked_location.limit(10).head())
-        print(most_common_trips.limit(10).head())
+        st.dataframe(most_visited_location.head())
+        st.dataframe(most_picked_location.head())
+        st.dataframe(most_common_trips.head())
         stop_stopwatch(start)
 
 
 st.set_page_config("Capstone Project - Analyse the effectiveness of polars library")
 st.title("Analyse Polars library")
-st.write(f"Polars version: {pl.__version__}")
-lazy_dataset = lazyscan()
-#combined_dataset = eagerscan()
 
-calculate_most_visited_locations(lazy_dataset,True)
+lazyscreen, eagerscreen = st.columns(2)
 
-#calculate_most_visited_locations(combined_dataset,False)
+with lazyscreen:
+    lazy_dataset = lazyscan()
+    calculate_most_visited_locations(lazy_dataset,True)
+with eagerscreen:
+
+    combined_dataset = eagerscan()
+
+    calculate_most_visited_locations(combined_dataset,False)
+
+#alculate_most_visited_locations(combined_dataset,False)
 #dataset = pl.read_parquet("https://d37ci6vzurychx.cloudfront.net/trip-data/yellow_tripdata_2024-01.parquet")
 #print(dataset.head)
 # dataset1 = pl.read_parquet("https://d37ci6vzurychx.cloudfront.net/trip-data/yellow_tripdata_2024-02.parquet")
