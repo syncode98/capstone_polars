@@ -32,21 +32,25 @@ def lazyscan():
 def eagerscan():
     combined_dataset = []
     start = start_stopwatch()
+    
     for i in range(1,12):
         month = f"{i:02d}"
-        dataset = pl.read_parquet("https://d37ci6vzurychx.cloudfront.net/trip-data/yellow_tripdata_2024-"+month+".parquet")
+        try:
+            dataset = pl.read_parquet("https://d37ci6vzurychx.cloudfront.net/trip-data/yellow_tripdata_2024-"+month+".parquet")
 
-        #cast datetime as nanoseconds to avoid errors
-        dataset = dataset.with_columns([
-            pl.col("tpep_pickup_datetime").cast(pl.Datetime("ns")),
-            pl.col("tpep_dropoff_datetime").cast(pl.Datetime("ns"))
-        ]
-        )
-        combined_dataset.append(dataset)
-        print("Finshed reading month:"+month)
+            #cast datetime as nanoseconds to avoid errors
+            dataset = dataset.with_columns([
+                pl.col("tpep_pickup_datetime").cast(pl.Datetime("ns")),
+                pl.col("tpep_dropoff_datetime").cast(pl.Datetime("ns"))
+            ]
+            )
+            combined_dataset.append(dataset)
+            print("Finshed reading month:"+month)
+        except Exception as e:
+            print(e)
     df = pl.concat(combined_dataset)
     #df.write_csv("combined_file.csv")
-    stop_stopwatch()
+    stop_stopwatch(start)
     return combined_dataset
 
 def calculate_most_visited_locations(combined_dataset,is_lazy = False):
@@ -55,9 +59,9 @@ def calculate_most_visited_locations(combined_dataset,is_lazy = False):
     df = combined_dataset.select([
         "tpep_pickup_datetime","tpep_dropoff_datetime","trip_distance","PULocationID", "DOLocationID","fare_amount", "total_amount"
     ])
-    most_visited_location = df.group_by("DOLocationID").count().sort(("count"),descending=True)
-    most_picked_location = df.group_by("PULocationID").count().sort(("count"),descending=True)
-    most_common_trips = df.group_by(["PULocationID","DOLocationID"]).agg([pl.count().alias("trips")]).sort(("trips"),descending=True)
+    most_visited_location = df.group_by("DOLocationID").len().sort(("len"),descending=True)
+    most_picked_location = df.group_by("PULocationID").len().sort(("len"),descending=True)
+    most_common_trips = df.group_by(["PULocationID","DOLocationID"]).agg([pl.len().alias("trips")]).sort(("trips"),descending=True)
 
     if(is_lazy):
         print(most_visited_location.limit(5).collect())
@@ -65,17 +69,18 @@ def calculate_most_visited_locations(combined_dataset,is_lazy = False):
         print(most_common_trips.limit(5).collect())
         stop_stopwatch(start)
     else:
-        print(most_visited_location.collect())
-        print(most_picked_location.collect())
-        print(most_common_trips.collect())
+        print(most_visited_location.limit(10).head())
+        print(most_picked_location.limit(10).head())
+        print(most_common_trips.limit(10).head())
         stop_stopwatch(start)
 
     
 lazy_dataset = lazyscan()
+combined_dataset = eagerscan()
+
 calculate_most_visited_locations(lazy_dataset,True)
 
-combined_dataset = eagerscan()
-calculate_most_visited_locations(combined_dataset,False)
+#calculate_most_visited_locations(combined_dataset,False)
 #dataset = pl.read_parquet("https://d37ci6vzurychx.cloudfront.net/trip-data/yellow_tripdata_2024-01.parquet")
 #print(dataset.head)
 # dataset1 = pl.read_parquet("https://d37ci6vzurychx.cloudfront.net/trip-data/yellow_tripdata_2024-02.parquet")
